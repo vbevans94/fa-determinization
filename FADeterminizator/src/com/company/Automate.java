@@ -123,7 +123,7 @@ public class Automate {
                         // create state transitions if its not yet created
                         states.addAll(new ArrayList<StateTransitions>(fromName - size + 1));
                         stateTransitions = new StateTransitions(State.fromName(fromName));
-                        states.set(fromName, stateTransitions);
+                        states.add(fromName, stateTransitions);
                     } else {
                         stateTransitions = states.get(fromName);
                     }
