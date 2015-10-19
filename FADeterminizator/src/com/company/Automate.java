@@ -9,6 +9,8 @@ public class Automate {
 
     private final List<StateTransitions> states = new ArrayList<StateTransitions>();
     private final Set<String> transitions = new TreeSet<String>();
+    private final Set<State> finalStates = new HashSet<State>();
+    private final Set<State> initialStates = new HashSet<State>();
 
     public List<StateTransitions> getStates() {
         return states;
@@ -16,6 +18,14 @@ public class Automate {
 
     public Set<String> getTransitions() {
         return transitions;
+    }
+
+    public Set<State> getFinalStates() {
+        return finalStates;
+    }
+
+    public Set<State> getInitialStates() {
+        return initialStates;
     }
 
     public void output() {
@@ -33,6 +43,17 @@ public class Automate {
             }
             System.out.format("%n");
         }
+        // output initial states(actually state)
+        outputStates(initialStates);
+        // output final states
+        outputStates(finalStates);
+    }
+
+    private static void outputStates(Set<State> states) {
+        for (State state : states) {
+            System.out.format("%d ", state.getName());
+        }
+        System.out.format("%n");
     }
 
     public static Automate fromFile(String fileName) {
@@ -81,17 +102,37 @@ public class Automate {
             scanner.useLocale(Locale.US);
 
             String line = scanner.nextLine();
-            Pattern pattern = Pattern.compile("\\{([\\w,]+:?)\\}");
+            Pattern pattern = Pattern.compile("\\{([\\w,\\$]+:?)\\}");
             Matcher matcher = pattern.matcher(line);
             if (matcher.find()) {
                 String group = matcher.group(1);
-                automate.getTransitions().addAll(Arrays.asList(group.split(",")));
+                fillFromGroup(automate.getTransitions(), group);
             } else {
-                throw new IllegalStateException("File format is incorrect");
+                incorrectInput();
             }
 
-            scanner.nextLine(); // finite state
-            scanner.nextLine(); // start state
+            // read final state
+            List<String> finalStates = new ArrayList<String>();
+            line = scanner.nextLine();
+            matcher = pattern.matcher(line);
+            if (matcher.find()) {
+                String group = matcher.group(1);
+
+                fillFromGroup(finalStates, group);
+            } else {
+                return incorrectInput();
+            }
+
+            List<String> initialStates = new ArrayList<String>();
+            line = scanner.nextLine();
+            matcher = pattern.matcher(line);
+            if (matcher.find()) {
+                String group = matcher.group(1);
+
+                fillFromGroup(initialStates, group);
+            } else {
+                return incorrectInput();
+            }
             scanner.nextLine(); // Q
             scanner.nextLine(); // T
 
@@ -111,11 +152,19 @@ public class Automate {
                         reindex.add(fromState);
                     }
 
+                    // add states if it's re-indexed
+                    addReindexed(automate.finalStates, finalStates, fromState, fromName);
+                    addReindexed(automate.initialStates, initialStates, fromState, fromName);
+
                     int toName = reindex.indexOf(toState);
                     if (toName == -1) {
                         toName = reindex.size();
                         reindex.add(toState);
                     }
+
+                    // add to corresponding sets if reindexed
+                    addReindexed(automate.finalStates, finalStates, toState, toName);
+                    addReindexed(automate.initialStates, initialStates, toState, toName);
 
                     int size = states.size();
                     StateTransitions stateTransitions;
@@ -130,17 +179,30 @@ public class Automate {
 
                     stateTransitions.transition(transition, State.fromName(toName));
                 } else {
-                    throw new IllegalStateException("File format is incorrect");
+                    return incorrectInput();
                 }
             }
 
             scanner.close();
-        }
-        catch(FileNotFoundException ex) {
+        } catch(FileNotFoundException ex) {
             System.out.println("Unable to open file '" + fileName + "'");
         }
 
         return automate;
+    }
+
+    private static void addReindexed(Set<State> reindexedStates, List<String> states, String state, int reindexedName) {
+        if (states.contains(state)) {
+            reindexedStates.add(State.fromName(reindexedName));
+        }
+    }
+
+    private static void fillFromGroup(Collection<String> initialStates, String group) {
+        initialStates.addAll(Arrays.asList(group.split(",")));
+    }
+
+    private static Automate incorrectInput() {
+        throw new IllegalStateException("File format is incorrect");
     }
 
     @Override

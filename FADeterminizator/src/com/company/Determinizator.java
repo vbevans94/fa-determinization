@@ -30,6 +30,13 @@ public class Determinizator {
         while (!queue.isEmpty()) {
             // build set of state which may be new
             topState = queue.poll();
+            // initial states move from automate to determined
+            for (State initialState : automate.getInitialStates()) {
+                if (topState.getSet().contains(initialState.getName())) {
+                    determined.getInitialStates().add(topState);
+                    break;
+                }
+            }
             // transitions of determined automate
             StateTransitions topTransitions = new StateTransitions(topState);
 
@@ -50,6 +57,14 @@ public class Determinizator {
                     // it's new
                     stateName++; // set name
                     tempState.setName(stateName);
+
+                    // final states move from automate to determined
+                    for (State finalState : automate.getFinalStates()) {
+                        if (tempState.getSet().contains(finalState.getName())) {
+                            determined.getFinalStates().add(tempState);
+                            break;
+                        }
+                    }
 
                     topTransitions.transition(transition, tempState);
 
