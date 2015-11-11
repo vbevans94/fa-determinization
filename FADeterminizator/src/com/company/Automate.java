@@ -193,12 +193,14 @@ public class Automate {
 
     private static void addReindexed(Set<State> reindexedStates, List<String> states, String state, int reindexedName) {
         if (states.contains(state)) {
-            reindexedStates.add(State.fromName(reindexedName));
+            State newState = State.fromName(reindexedName);
+            newState.addToSet(reindexedName); // to make them different as equals use only set
+            reindexedStates.add(newState);
         }
     }
 
-    private static void fillFromGroup(Collection<String> initialStates, String group) {
-        initialStates.addAll(Arrays.asList(group.split(",")));
+    private static void fillFromGroup(Collection<String> states, String group) {
+        states.addAll(Arrays.asList(group.split(",")));
     }
 
     private static Automate incorrectInput() {

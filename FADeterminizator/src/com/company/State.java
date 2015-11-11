@@ -52,13 +52,13 @@ public class State {
 
         State state = (State) o;
 
-        return !(set != null ? !set.equals(state.set) : state.set != null);
+        return set.equals(state.set);
 
     }
 
     @Override
     public int hashCode() {
-        return set != null ? set.hashCode() : 0;
+        return set.hashCode();
     }
 
     @Override
