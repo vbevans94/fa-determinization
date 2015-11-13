@@ -28,6 +28,14 @@ public class Automate {
         return initialStates;
     }
 
+    public Set<Integer> getInitialStateNames() {
+        Set<Integer> names = new HashSet<Integer>();
+        for (State state : getInitialStates()) {
+            names.add(state.getName());
+        }
+        return names;
+    }
+
     public void output() {
         int size = states.size();
         System.out.format("%d%n", size);

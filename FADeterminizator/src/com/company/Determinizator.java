@@ -31,11 +31,9 @@ public class Determinizator {
             // build set of state which may be new
             topState = queue.poll();
             // initial states move from automate to determined
-            for (State initialState : automate.getInitialStates()) {
-                if (topState.getSet().contains(initialState.getName())) {
-                    determined.getInitialStates().add(topState);
-                    break;
-                }
+            if (determined.getInitialStates().isEmpty() &&
+                    automate.getInitialStateNames().equals(topState.getSet())) {
+                determined.getInitialStates().add(topState);
             }
             // transitions of determined automate
             StateTransitions topTransitions = new StateTransitions(topState);
